@@ -1,0 +1,70 @@
+---
+title: "Linear Regression With Spline Term Application"
+author: "Mathias Mathieu"
+date: "30/06/2017"
+output: slidy_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## Introduction
+
+- A simple linear regression model fits a straight line to the data points 
+- By adding a spline term we can fit a linear model with a breakpoint
+- We now have two straight lines that come together continously in the breakpoint
+- This gives us a better fit, but beware of overfitting!
+- What if we could interactively play around with the breakpoint on different data sets?
+- [Our application](http://mercret.shinyapps.io/SplineRegression) gives this opportunity
+
+## Example
+
+We fit a simple linear model on the mtcars dataset, and a model with the spline term. We plot the data and the models. We also give the root mean squared error (RMSE) to indicate how well the models are fitted.  
+This can all be done interactively in our application.
+
+```{r code, echo=TRUE, eval=FALSE}
+model1 <- lm(hp~mpg,data=mtcars)
+breakpoint <- 24
+mtcars$spline  <- ifelse(mtcars$mpg - breakpoint > 0, mtcars$mpg - breakpoint, 0)
+model2 <- lm(hp~mpg+spline,data=mtcars)
+
+plot(mtcars$mpg,mtcars$hp,xlab="mpg",ylab="hp")
+abline(model1,col="blue",lwd=2)
+r <- range(mtcars$mpg)
+s <- seq(r[1],r[2],length.out=100)
+newdata=data.frame(mpg=s,spline=ifelse(s - breakpoint > 0, s - breakpoint,0))
+modlines <- predict(model2,newdata)
+lines(s,modlines,col="red",lwd=2)
+
+print(paste("RMSE Linear Model:",sqrt(mean(model1$residuals^2))))
+print(paste("RMSE Linear Model with Spline Term:",sqrt(mean(model2$residuals^2))))
+```
+
+## Example
+
+```{r plot, echo=FALSE, eval=TRUE}
+model1 <- lm(hp~mpg,data=mtcars)
+breakpoint <- 24
+mtcars$spline  <- ifelse(mtcars$mpg - breakpoint > 0, mtcars$mpg - breakpoint, 0)
+model2 <- lm(hp~mpg+spline,data=mtcars)
+
+plot(mtcars$mpg,mtcars$hp,xlab="mpg",ylab="hp")
+abline(model1,col="blue",lwd=2)
+r <- range(mtcars$mpg)
+s <- seq(r[1],r[2],length.out=100)
+newdata=data.frame(mpg=s,spline=ifelse(s - breakpoint > 0, s - breakpoint,0))
+modlines <- predict(model2,newdata)
+lines(s,modlines,col="red",lwd=2)
+
+print(paste("RMSE Linear Model:",sqrt(mean(model1$residuals^2))))
+print(paste("RMSE Linear Model with Spline Term:",sqrt(mean(model2$residuals^2))))
+```
+
+## The Application
+
+- In the application you can choose from 4 different data sets provided by R (Old Faithful, Trees, Mtcars and Swiss)
+- You can choose which variables are displayed on the plot, and fitted into a model
+- The breakpoint of the regression with a spline term can be chosen interactively with a slider
+- The root mean squared error of the two models is displayed, to give an indication of the improvement from using a breakpoint
+- Have fun experimenting!
